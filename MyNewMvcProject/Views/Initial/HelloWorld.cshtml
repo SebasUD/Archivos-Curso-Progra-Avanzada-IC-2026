@@ -1,0 +1,22 @@
+@{
+    ViewData["Title"] = "Hello World";
+}
+
+<div class="container">
+    <h1>Hello World</h1>
+    
+    @if (ViewData["UserName"] != null)
+    {
+        <div class="alert alert-success" role="alert">
+            <h2>Hello World, @ViewData["UserName"]!</h2>
+        </div>
+    }
+    
+    <form method="post" class="mt-4">
+        <div class="form-group">
+            <label for="name">Enter your name:</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="Your name here" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>

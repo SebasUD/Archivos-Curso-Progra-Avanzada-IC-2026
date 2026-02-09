@@ -1,0 +1,5 @@
+[
+  {"id":1,"isbn":"9780451524935","title":"1984","description":"Dystopian novel","publisher":"Secker & Warburg","published_date":"1949-06-08","pages":328},
+  {"id":2,"isbn":"9780544003415","title":"The Hobbit","description":"Fantasy novel","publisher":"George Allen & Unwin","published_date":"1937-09-21","pages":310},
+  {"id":3,"isbn":"9780747532743","title":"Harry Potter and the Philosopher's Stone","description":"First book of Harry Potter","publisher":"Bloomsbury","published_date":"1997-06-26","pages":223}
+]

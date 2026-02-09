@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="MyLibrary.DbModel/MyLibrary.DbModel.csproj" />
+  <Project Path="MyNewMvcProject/MyNewMvcProject.csproj" />
+</Solution>

@@ -1,0 +1,6 @@
+[
+  {"book_id":1,"theme_id":1},
+  {"book_id":2,"theme_id":2},
+  {"book_id":2,"theme_id":3},
+  {"book_id":3,"theme_id":2}
+]
