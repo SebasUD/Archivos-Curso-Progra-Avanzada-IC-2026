@@ -1,0 +1,6 @@
+[
+  {"id":1,"book_id":1,"barcode":"BC-1984-001","status":0,"penalty_weight":1},
+  {"id":2,"book_id":1,"barcode":"BC-1984-002","status":2,"penalty_weight":1},
+  {"id":3,"book_id":2,"barcode":"BC-HOBBIT-001","status":1,"penalty_weight":1},
+  {"id":4,"book_id":3,"barcode":"BC-HP1-001","status":0,"penalty_weight":4}
+]

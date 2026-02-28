@@ -1,0 +1,5 @@
+[
+  {"id":1,"first_name":"George","last_name":"Orwell","bio":"English novelist and essayist"},
+  {"id":2,"first_name":"J.K.","last_name":"Rowling","bio":"British author, best known for the Harry Potter series"},
+  {"id":3,"first_name":"J.R.R.","last_name":"Tolkien","bio":"English writer, poet, philologist"}
+]
