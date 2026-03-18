@@ -1,0 +1,42 @@
+[
+  {
+    "Id": 1,
+    "BookId": 1,
+    "Barcode": "BC-1984-001",
+    "Status": 0,
+    "PenaltyWeight": 0,
+    "AddedAt": null,
+    "Book": null,
+    "Borrows": []
+  },
+  {
+    "Id": 2,
+    "BookId": 1,
+    "Barcode": "BC-1984-002",
+    "Status": 2,
+    "PenaltyWeight": 0,
+    "AddedAt": null,
+    "Book": null,
+    "Borrows": []
+  },
+  {
+    "Id": 3,
+    "BookId": 2,
+    "Barcode": "BC-HOBBIT-001",
+    "Status": 1,
+    "PenaltyWeight": 0,
+    "AddedAt": null,
+    "Book": null,
+    "Borrows": []
+  },
+  {
+    "Id": 4,
+    "BookId": 3,
+    "Barcode": "BC-HP1-001",
+    "Status": 0,
+    "PenaltyWeight": 0,
+    "AddedAt": null,
+    "Book": null,
+    "Borrows": []
+  }
+]

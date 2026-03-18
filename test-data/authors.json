@@ -1,0 +1,26 @@
+[
+  {
+    "Id": 1,
+    "First_Name": "George",
+    "Last_Name": "Orwell",
+    "Bio": "English novelist and essayist",
+    "CreatedAt": null,
+    "Bookauthors": []
+  },
+  {
+    "Id": 2,
+    "First_Name": "J.K.",
+    "Last_Name": "Rowling Fern\u00E1ndez",
+    "Bio": "British author, best known for the Harry Potter series",
+    "CreatedAt": null,
+    "Bookauthors": []
+  },
+  {
+    "Id": 3,
+    "First_Name": "J.R.R.",
+    "Last_Name": "Tolkien",
+    "Bio": "English writer, poet, philologist",
+    "CreatedAt": null,
+    "Bookauthors": []
+  }
+]

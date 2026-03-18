@@ -1,0 +1,37 @@
+@model MyLibrary.DbModel.Entities.Book
+
+@{
+    ViewData["Title"] = "Edit Book";
+}
+
+<h1>Edit Book</h1>
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    <div class="mb-3">
+        <label for="Isbn" class="form-label">ISBN</label>
+        <input type="text" class="form-control" id="Isbn" name="Isbn" value="@Model.Isbn" />
+    </div>
+    <div class="mb-3">
+        <label for="Title" class="form-label">Title</label>
+        <input type="text" class="form-control" id="Title" name="Title" value="@Model.Title" required />
+    </div>
+    <div class="mb-3">
+        <label for="Description" class="form-label">Description</label>
+        <textarea class="form-control" id="Description" name="Description">@Model.Description</textarea>
+    </div>
+    <div class="mb-3">
+        <label for="Publisher" class="form-label">Publisher</label>
+        <input type="text" class="form-control" id="Publisher" name="Publisher" value="@Model.Publisher" />
+    </div>
+    <div class="mb-3">
+        <label for="PublishedDate" class="form-label">Published Date</label>
+        <input type="date" class="form-control" id="PublishedDate" name="PublishedDate" value="@Model.PublishedDate?.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="mb-3">
+        <label for="Pages" class="form-label">Pages</label>
+        <input type="number" class="form-control" id="Pages" name="Pages" value="@Model.Pages" />
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="@Url.Action("Index", "Books")" class="btn btn-secondary">Cancel</a>
+</form>

@@ -1,0 +1,30 @@
+[
+  {
+    "BookId": 1,
+    "ThemeId": 2,
+    "Book": null,
+    "Theme": {
+      "Id": 2,
+      "Name": "Fantasy",
+      "Bookthemes": []
+    }
+  },
+  {
+    "BookId": 2,
+    "ThemeId": 1,
+    "Book": null,
+    "Theme": null
+  },
+  {
+    "BookId": 3,
+    "ThemeId": 3,
+    "Book": null,
+    "Theme": null
+  },
+  {
+    "BookId": 3,
+    "ThemeId": 1,
+    "Book": null,
+    "Theme": null
+  }
+]

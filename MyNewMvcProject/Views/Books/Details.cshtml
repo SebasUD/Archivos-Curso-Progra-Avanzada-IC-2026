@@ -1,0 +1,51 @@
+@model MyLibrary.DbModel.Entities.Book
+
+@{
+    ViewData["Title"] = "Book Details";
+}
+
+<h1>Book Details</h1>
+
+<div class="card">
+    <div class="card-header">
+        <h5>@Model.Title</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>ID:</strong> @Model.Id</p>
+        <p><strong>ISBN:</strong> @Model.Isbn</p>
+        <p><strong>Title:</strong> @Model.Title</p>
+        <p><strong>Description:</strong> @Model.Description</p>
+        <p><strong>Publisher:</strong> @Model.Publisher</p>
+        <p><strong>Published Date:</strong> @Model.PublishedDate?.ToString("yyyy-MM-dd")</p>
+        <p><strong>Pages:</strong> @Model.Pages</p>
+        <p><strong>Created At:</strong> @Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss")</p>
+
+        <h4>Authors</h4>
+        <ul>
+            @foreach (var ba in Model.Bookauthors)
+            {
+                <li>@ba.AuthorId - @ba.Author?.First_Name @ba.Author?.Last_Name (@ba.Role)</li>
+            }
+        </ul>
+
+        <h4>Copies</h4>
+        <ul>
+            @foreach (var bc in Model.Bookcopies)
+            {
+                <li>@bc.Id - Status: @bc.Status</li>
+            }
+        </ul>
+
+        <h4>Themes</h4>
+        <ul>
+            @foreach (var bt in Model.Bookthemes)
+            {
+                <li>@bt.ThemeId - @bt.Theme?.Name</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="@Url.Action("Index", "Books")" class="btn btn-secondary">Back to List</a>
+</div>

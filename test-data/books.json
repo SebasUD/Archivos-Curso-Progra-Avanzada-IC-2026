@@ -1,0 +1,88 @@
+[
+  {
+    "Id": 1,
+    "Isbn": "9780451524935",
+    "Title": "1984.5",
+    "Description": "Dystopian novel",
+    "Publisher": "Secker \u0026 Warburg",
+    "PublishedDate": null,
+    "Pages": 328,
+    "CreatedAt": null,
+    "Bookauthors": [
+      {
+        "BookId": 1,
+        "AuthorId": 1,
+        "Role": "author",
+        "Author": {
+          "Id": 1,
+          "First_Name": "George",
+          "Last_Name": "Orwell",
+          "Bio": "English novelist and essayist",
+          "CreatedAt": null,
+          "Bookauthors": []
+        },
+        "Book": null
+      }
+    ],
+    "Bookcopies": [
+      {
+        "Id": 1,
+        "BookId": 1,
+        "Barcode": "BC-1984-001",
+        "Status": 0,
+        "PenaltyWeight": 0,
+        "AddedAt": null,
+        "Book": null,
+        "Borrows": []
+      },
+      {
+        "Id": 2,
+        "BookId": 1,
+        "Barcode": "BC-1984-002",
+        "Status": 2,
+        "PenaltyWeight": 0,
+        "AddedAt": null,
+        "Book": null,
+        "Borrows": []
+      }
+    ],
+    "Bookthemes": [
+      {
+        "BookId": 1,
+        "ThemeId": 2,
+        "Book": null,
+        "Theme": {
+          "Id": 2,
+          "Name": "Fantasy",
+          "Bookthemes": []
+        }
+      }
+    ]
+  },
+  {
+    "Id": 2,
+    "Isbn": "9780544003415",
+    "Title": "The Hobbit",
+    "Description": "Fantasy novel",
+    "Publisher": "George Allen \u0026 Unwin",
+    "PublishedDate": null,
+    "Pages": 310,
+    "CreatedAt": null,
+    "Bookauthors": [],
+    "Bookcopies": [],
+    "Bookthemes": []
+  },
+  {
+    "Id": 3,
+    "Isbn": "9780747532743",
+    "Title": "Harry Potter and the Philosopher\u0027s Stone",
+    "Description": "First book of Harry Potter",
+    "Publisher": "Hello world",
+    "PublishedDate": null,
+    "Pages": 223,
+    "CreatedAt": null,
+    "Bookauthors": [],
+    "Bookcopies": [],
+    "Bookthemes": []
+  }
+]
