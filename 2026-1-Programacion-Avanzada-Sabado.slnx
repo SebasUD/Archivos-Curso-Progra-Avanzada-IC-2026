@@ -4,4 +4,5 @@
   <Project Path="MyLibrary.RepositoryModel/MyLibrary.RepositoryModel.csproj" />
   <Project Path="MyLibrary.ApiModel/MyLibrary.ApiModel.csproj" />
   <Project Path="MyNewMvcProject/MyNewMvcProject.csproj" />
+  <Project Path="CalculadorLogistico/CalculadorLogistico.csproj" />
 </Solution>
