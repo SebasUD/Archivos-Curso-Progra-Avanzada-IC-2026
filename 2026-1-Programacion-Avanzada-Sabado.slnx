@@ -5,4 +5,5 @@
   <Project Path="MyLibrary.ApiModel/MyLibrary.ApiModel.csproj" />
   <Project Path="MyNewMvcProject/MyNewMvcProject.csproj" />
   <Project Path="CalculadorLogistico/CalculadorLogistico.csproj" />
+  <Project Path="CalculadorLogistico.Tests/CalculadorLogistico.Tests.csproj" />
 </Solution>
