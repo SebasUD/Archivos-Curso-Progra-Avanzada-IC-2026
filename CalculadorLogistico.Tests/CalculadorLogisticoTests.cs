@@ -23,7 +23,7 @@ public class CalculadorLogisticoTests
         };
 
         // Act
-        decimal resultado = _calculador.CalcularTarifaEnvio(kilos, zonaOrigen, zonaDestino, tarifas);
+        decimal resultado = _calculador.CalcularTarifaEnvio(kilos, zonaOrigen, zonaDestino, tarifas, out _);
 
         // Assert
         Assert.Equal(50m, resultado);
@@ -42,7 +42,7 @@ public class CalculadorLogisticoTests
         };
 
         // Act
-        decimal resultado = _calculador.CalcularTarifaEnvio(kilos, zonaOrigen, zonaDestino, tarifas);
+        decimal resultado = _calculador.CalcularTarifaEnvio(kilos, zonaOrigen, zonaDestino, tarifas, out _);
 
         // Assert
         Assert.Equal(15.5m, resultado);
@@ -61,7 +61,7 @@ public class CalculadorLogisticoTests
         };
 
         // Act
-        decimal resultado = _calculador.CalcularTarifaEnvio(kilos, zonaOrigen, zonaDestino, tarifas);
+        decimal resultado = _calculador.CalcularTarifaEnvio(kilos, zonaOrigen, zonaDestino, tarifas, out _);
 
         // Assert
         Assert.Equal(2750m, resultado);
@@ -80,10 +80,10 @@ public class CalculadorLogisticoTests
         };
 
         // Act
-        decimal resultado = _calculador.CalcularTarifaEnvio(kilos, zonaOrigen, zonaDestino, tarifas);
+        decimal resultado = _calculador.CalcularTarifaEnvio(kilos, zonaOrigen, zonaDestino, tarifas, out _);
 
         // Assert
-        Assert.Equal(67.375m, resultado);
+        Assert.Equal(67.38m, resultado); // Rounded to 2 decimals
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public class CalculadorLogisticoTests
         };
 
         // Act
-        decimal resultado = _calculador.CalcularTarifaEnvio(kilos, zonaOrigen, zonaDestino, tarifas);
+        decimal resultado = _calculador.CalcularTarifaEnvio(kilos, zonaOrigen, zonaDestino, tarifas, out _);
 
         // Assert
         Assert.Equal(0m, resultado);
@@ -120,10 +120,30 @@ public class CalculadorLogisticoTests
         };
 
         // Act
-        decimal resultado = _calculador.CalcularTarifaEnvio(kilos, zonaOrigen, zonaDestino, tarifas);
+        decimal resultado = _calculador.CalcularTarifaEnvio(kilos, zonaOrigen, zonaDestino, tarifas, out _);
 
         // Assert
         Assert.Equal(160m, resultado);
+    }
+
+    [Fact]
+    public void CalcularTarifaEnvio_UnknownZones_ThrowsException()
+    {
+        // Arrange
+        decimal kilos = 15m;
+        string zonaOrigen = "X";
+        string zonaDestino = "Y";
+        var tarifas = new Dictionary<(string, string), decimal>
+        {
+            { ("A", "B"), 5m },
+            { ("B", "C"), 3m }
+        };
+
+        // Act & Assert
+        var exception = Assert.Throws<ZonaDesconocidaException>(() =>
+            _calculador.CalcularTarifaEnvio(kilos, zonaOrigen, zonaDestino, tarifas, out _));
+
+        Assert.Contains("no existen en ninguna ruta disponible", exception.Message);
     }
 
     [Fact]
@@ -132,14 +152,17 @@ public class CalculadorLogisticoTests
         // Arrange
         decimal kilos = 15m;
         string zonaOrigen = "A";
-        string zonaDestino = "B";
+        string zonaDestino = "D";
         var tarifas = new Dictionary<(string, string), decimal>
         {
-            { ("X", "Y"), 5m }
+            { ("A", "B"), 5m },
+            { ("B", "C"), 3m },
+            { ("D", "E"), 7m }
+            // A and D exist, but no connection: no direct A->D, no reverse D->A, no transshipment possible
         };
 
         // Act
-        decimal resultado = _calculador.CalcularTarifaEnvio(kilos, zonaOrigen, zonaDestino, tarifas);
+        decimal resultado = _calculador.CalcularTarifaEnvio(kilos, zonaOrigen, zonaDestino, tarifas, out _);
 
         // Assert
         Assert.Equal(0m, resultado);
