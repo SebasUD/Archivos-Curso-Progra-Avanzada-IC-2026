@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
@@ -75,7 +76,7 @@ public class UsageExamples
             Console.WriteLine($"Entry Time: {parked.EntryDateTime:yyyy-MM-dd HH:mm:ss}");
             Console.WriteLine($"Status: {parked.SessionStatus}");
             Console.WriteLine($"Exit Time: {(parked.ExitDateTime?.ToString("yyyy-MM-dd HH:mm:ss") ?? "NOT YET")}");
-            console.WriteLine();
+            Console.WriteLine();
         }
     }
 

@@ -91,11 +91,13 @@ public class ParkingSystemDbContext : DbContext
                 .HasComment("Vehicle type: sedan, 4x4, motorcycle");
 
             entity.Property(e => e.CreatedAt)
+                .HasColumnName("created_at")
                 .HasColumnType("timestamp")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasComment("Record creation timestamp");
 
             entity.Property(e => e.UpdatedAt)
+                .HasColumnName("updated_at")
                 .HasColumnType("timestamp")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasComment("Last update timestamp");
@@ -146,11 +148,13 @@ public class ParkingSystemDbContext : DbContext
                 .HasComment("Hourly parking rate");
 
             entity.Property(e => e.CreatedAt)
+                .HasColumnName("created_at")
                 .HasColumnType("timestamp")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasComment("Record creation timestamp");
 
             entity.Property(e => e.UpdatedAt)
+                .HasColumnName("updated_at")
                 .HasColumnType("timestamp")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasComment("Last update timestamp");
@@ -209,11 +213,13 @@ public class ParkingSystemDbContext : DbContext
                 .HasComment("Vehicle exit timestamp (NULL if still parked)");
 
             entity.Property(e => e.CreatedAt)
+                .HasColumnName("created_at")
                 .HasColumnType("timestamp")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasComment("Record creation timestamp");
 
             entity.Property(e => e.UpdatedAt)
+                .HasColumnName("updated_at")
                 .HasColumnType("timestamp")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasComment("Last update timestamp");

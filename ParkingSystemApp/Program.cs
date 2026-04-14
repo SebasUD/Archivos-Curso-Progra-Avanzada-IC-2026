@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,7 +16,6 @@ var configuration = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddUserSecrets<Program>(optional: true) // Load User Secrets if available
-    .AddEnvironmentVariables()
     .Build();
 
 // Setup dependency injection
@@ -40,11 +40,7 @@ services.AddDbContext<ParkingSystemDbContext>(options =>
 {
     options.UseMySql(
         connectionString,
-        ServerVersion.AutoDetect(connectionString),
-        mysqlOptions =>
-        {
-            mysqlOptions.CharSetBehavior(CharSetBehavior.NeverAppend);
-        });
+        ServerVersion.AutoDetect(connectionString));
 });
 
 // Add configuration and helpers to DI container
