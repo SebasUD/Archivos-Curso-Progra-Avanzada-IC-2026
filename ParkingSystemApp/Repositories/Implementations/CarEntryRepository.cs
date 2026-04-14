@@ -317,6 +317,176 @@ public class CarEntryRepository : ICarEntryRepository
         }
     }
 
+    // ========================================
+    // JSON-based CRUD Operations
+    // ========================================
+
+    /// <summary>
+    /// Inserts a new car entry record into the JSON file.
+    /// Reads the current JSON file, adds the new record, and persists the changes.
+    /// </summary>
+    public async Task<long> InsertToJsonAsync(CarEntry carEntry)
+    {
+        if (carEntry == null)
+        {
+            throw new ArgumentNullException(nameof(carEntry));
+        }
+
+        try
+        {
+            string filePath = GetJsonFilePath();
+
+            // Read existing car entries from JSON
+            var carEntries = new List<CarEntry>();
+            if (File.Exists(filePath))
+            {
+                string jsonContent = await File.ReadAllTextAsync(filePath);
+                carEntries = JsonSerializer.Deserialize<List<CarEntry>>(jsonContent,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<CarEntry>();
+            }
+
+            // Set timestamps
+            carEntry.CreatedAt = DateTime.UtcNow;
+            carEntry.UpdatedAt = DateTime.UtcNow;
+
+            // Generate new Consecutive ID (max existing Consecutive + 1)
+            carEntry.Consecutive = carEntries.Count > 0 ? carEntries.Max(c => c.Consecutive) + 1 : 1;
+
+            // Add to list
+            carEntries.Add(carEntry);
+
+            // Write back to JSON file
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string updatedJson = JsonSerializer.Serialize(carEntries, options);
+            await File.WriteAllTextAsync(filePath, updatedJson);
+
+            _logger.LogInformation($"Car entry inserted into JSON file with Consecutive ID: {carEntry.Consecutive}");
+            return carEntry.Consecutive;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError($"Error serializing to JSON: {ex.Message}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error inserting car entry to JSON: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Updates an existing car entry record in the JSON file.
+    /// Reads the JSON file, finds and updates the record, and persists the changes.
+    /// </summary>
+    public async Task<bool> UpdateInJsonAsync(CarEntry carEntry)
+    {
+        if (carEntry == null)
+        {
+            throw new ArgumentNullException(nameof(carEntry));
+        }
+
+        try
+        {
+            string filePath = GetJsonFilePath();
+
+            if (!File.Exists(filePath))
+            {
+                _logger.LogWarning($"JSON file not found at {filePath}");
+                return false;
+            }
+
+            // Read existing car entries from JSON
+            string jsonContent = await File.ReadAllTextAsync(filePath);
+            var carEntries = JsonSerializer.Deserialize<List<CarEntry>>(jsonContent,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<CarEntry>();
+
+            // Find and update the car entry
+            var existingCarEntry = carEntries.FirstOrDefault(c => c.Consecutive == carEntry.Consecutive);
+            if (existingCarEntry == null)
+            {
+                _logger.LogWarning($"Car entry with Consecutive {carEntry.Consecutive} not found in JSON file");
+                return false;
+            }
+
+            // Update properties
+            existingCarEntry.AutomobileId = carEntry.AutomobileId;
+            existingCarEntry.ParkingId = carEntry.ParkingId;
+            existingCarEntry.EntryDateTime = carEntry.EntryDateTime;
+            existingCarEntry.ExitDateTime = carEntry.ExitDateTime;
+            existingCarEntry.UpdatedAt = DateTime.UtcNow;
+
+            // Write back to JSON file
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string updatedJson = JsonSerializer.Serialize(carEntries, options);
+            await File.WriteAllTextAsync(filePath, updatedJson);
+
+            _logger.LogInformation($"Car entry with Consecutive {carEntry.Consecutive} updated in JSON file");
+            return true;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError($"Error deserializing from JSON: {ex.Message}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error updating car entry in JSON: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Deletes a car entry record from the JSON file.
+    /// Reads the JSON file, removes the record, and persists the changes.
+    /// </summary>
+    public async Task<bool> DeleteFromJsonAsync(long consecutive)
+    {
+        try
+        {
+            string filePath = GetJsonFilePath();
+
+            if (!File.Exists(filePath))
+            {
+                _logger.LogWarning($"JSON file not found at {filePath}");
+                return false;
+            }
+
+            // Read existing car entries from JSON
+            string jsonContent = await File.ReadAllTextAsync(filePath);
+            var carEntries = JsonSerializer.Deserialize<List<CarEntry>>(jsonContent,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<CarEntry>();
+
+            // Find and remove the car entry
+            var carEntryToDelete = carEntries.FirstOrDefault(c => c.Consecutive == consecutive);
+            if (carEntryToDelete == null)
+            {
+                _logger.LogWarning($"Car entry with Consecutive {consecutive} not found in JSON file");
+                return false;
+            }
+
+            carEntries.Remove(carEntryToDelete);
+
+            // Write back to JSON file
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string updatedJson = JsonSerializer.Serialize(carEntries, options);
+            await File.WriteAllTextAsync(filePath, updatedJson);
+
+            _logger.LogInformation($"Car entry with Consecutive {consecutive} deleted from JSON file");
+            return true;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError($"Error deserializing from JSON: {ex.Message}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error deleting car entry from JSON: {ex.Message}");
+            throw;
+        }
+    }
+
     /// <summary>
     /// Gets the path to the CarEntry JSON file.
     /// </summary>

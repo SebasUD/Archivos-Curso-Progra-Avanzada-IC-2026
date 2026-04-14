@@ -250,6 +250,175 @@ public class ParkingRepository : IParkingRepository
         }
     }
 
+    // ========================================
+    // JSON-based CRUD Operations
+    // ========================================
+
+    /// <summary>
+    /// Inserts a new parking record into the JSON file.
+    /// Reads the current JSON file, adds the new record, and persists the changes.
+    /// </summary>
+    public async Task<long> InsertToJsonAsync(Parking parking)
+    {
+        if (parking == null)
+        {
+            throw new ArgumentNullException(nameof(parking));
+        }
+
+        try
+        {
+            string filePath = GetJsonFilePath();
+
+            // Read existing parking lots from JSON
+            var parkings = new List<Parking>();
+            if (File.Exists(filePath))
+            {
+                string jsonContent = await File.ReadAllTextAsync(filePath);
+                parkings = JsonSerializer.Deserialize<List<Parking>>(jsonContent,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<Parking>();
+            }
+
+            // Set timestamps
+            parking.CreatedAt = DateTime.UtcNow;
+            parking.UpdatedAt = DateTime.UtcNow;
+
+            // Generate new ID (max existing ID + 1)
+            parking.Id = parkings.Count > 0 ? parkings.Max(p => p.Id) + 1 : 1;
+
+            // Add to list
+            parkings.Add(parking);
+
+            // Write back to JSON file
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string updatedJson = JsonSerializer.Serialize(parkings, options);
+            await File.WriteAllTextAsync(filePath, updatedJson);
+
+            _logger.LogInformation($"Parking lot inserted into JSON file with ID: {parking.Id}");
+            return parking.Id;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError($"Error serializing to JSON: {ex.Message}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error inserting parking lot to JSON: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Updates an existing parking record in the JSON file.
+    /// Reads the JSON file, finds and updates the record, and persists the changes.
+    /// </summary>
+    public async Task<bool> UpdateInJsonAsync(Parking parking)
+    {
+        if (parking == null)
+        {
+            throw new ArgumentNullException(nameof(parking));
+        }
+
+        try
+        {
+            string filePath = GetJsonFilePath();
+
+            if (!File.Exists(filePath))
+            {
+                _logger.LogWarning($"JSON file not found at {filePath}");
+                return false;
+            }
+
+            // Read existing parking lots from JSON
+            string jsonContent = await File.ReadAllTextAsync(filePath);
+            var parkings = JsonSerializer.Deserialize<List<Parking>>(jsonContent,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<Parking>();
+
+            // Find and update the parking lot
+            var existingParking = parkings.FirstOrDefault(p => p.Id == parking.Id);
+            if (existingParking == null)
+            {
+                _logger.LogWarning($"Parking lot with ID {parking.Id} not found in JSON file");
+                return false;
+            }
+
+            // Update properties
+            existingParking.ProvinceName = parking.ProvinceName;
+            existingParking.ParkingName = parking.ParkingName;
+            existingParking.PricePerHour = parking.PricePerHour;
+            existingParking.UpdatedAt = DateTime.UtcNow;
+
+            // Write back to JSON file
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string updatedJson = JsonSerializer.Serialize(parkings, options);
+            await File.WriteAllTextAsync(filePath, updatedJson);
+
+            _logger.LogInformation($"Parking lot with ID {parking.Id} updated in JSON file");
+            return true;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError($"Error deserializing from JSON: {ex.Message}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error updating parking lot in JSON: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Deletes a parking record from the JSON file.
+    /// Reads the JSON file, removes the record, and persists the changes.
+    /// </summary>
+    public async Task<bool> DeleteFromJsonAsync(long id)
+    {
+        try
+        {
+            string filePath = GetJsonFilePath();
+
+            if (!File.Exists(filePath))
+            {
+                _logger.LogWarning($"JSON file not found at {filePath}");
+                return false;
+            }
+
+            // Read existing parking lots from JSON
+            string jsonContent = await File.ReadAllTextAsync(filePath);
+            var parkings = JsonSerializer.Deserialize<List<Parking>>(jsonContent,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<Parking>();
+
+            // Find and remove the parking lot
+            var parkingToDelete = parkings.FirstOrDefault(p => p.Id == id);
+            if (parkingToDelete == null)
+            {
+                _logger.LogWarning($"Parking lot with ID {id} not found in JSON file");
+                return false;
+            }
+
+            parkings.Remove(parkingToDelete);
+
+            // Write back to JSON file
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string updatedJson = JsonSerializer.Serialize(parkings, options);
+            await File.WriteAllTextAsync(filePath, updatedJson);
+
+            _logger.LogInformation($"Parking lot with ID {id} deleted from JSON file");
+            return true;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError($"Error deserializing from JSON: {ex.Message}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error deleting parking lot from JSON: {ex.Message}");
+            throw;
+        }
+    }
+
     /// <summary>
     /// Gets the path to the Parking JSON file.
     /// </summary>

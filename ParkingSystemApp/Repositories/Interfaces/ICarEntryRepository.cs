@@ -94,4 +94,32 @@ public interface ICarEntryRepository
     /// </summary>
     /// <returns>The full path to the PRQ_CarEntry.json file.</returns>
     string GetJsonFilePath();
+
+    // ========================================
+    // JSON-based CRUD Operations
+    // ========================================
+
+    /// <summary>
+    /// Inserts a new car entry record into the JSON file.
+    /// Reads the current JSON file, adds the new record, and persists the changes.
+    /// </summary>
+    /// <param name="carEntry">The car entry entity to insert into JSON.</param>
+    /// <returns>A task representing the asynchronous operation. Returns the Consecutive ID of the inserted record.</returns>
+    Task<long> InsertToJsonAsync(CarEntry carEntry);
+
+    /// <summary>
+    /// Updates an existing car entry record in the JSON file.
+    /// Reads the JSON file, finds and updates the record, and persists the changes.
+    /// </summary>
+    /// <param name="carEntry">The car entry entity with updated values.</param>
+    /// <returns>A task representing the asynchronous operation. Returns true if update was successful.</returns>
+    Task<bool> UpdateInJsonAsync(CarEntry carEntry);
+
+    /// <summary>
+    /// Deletes a car entry record from the JSON file.
+    /// Reads the JSON file, removes the record, and persists the changes.
+    /// </summary>
+    /// <param name="consecutive">The Consecutive ID of the car entry to delete from JSON.</param>
+    /// <returns>A task representing the asynchronous operation. Returns true if deletion was successful.</returns>
+    Task<bool> DeleteFromJsonAsync(long consecutive);
 }

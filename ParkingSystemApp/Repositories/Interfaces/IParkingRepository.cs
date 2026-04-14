@@ -74,4 +74,32 @@ public interface IParkingRepository
     /// </summary>
     /// <returns>The full path to the PRQ_Parking.json file.</returns>
     string GetJsonFilePath();
+
+    // ========================================
+    // JSON-based CRUD Operations
+    // ========================================
+
+    /// <summary>
+    /// Inserts a new parking record into the JSON file.
+    /// Reads the current JSON file, adds the new record, and persists the changes.
+    /// </summary>
+    /// <param name="parking">The parking entity to insert into JSON.</param>
+    /// <returns>A task representing the asynchronous operation. Returns the ID of the inserted record.</returns>
+    Task<long> InsertToJsonAsync(Parking parking);
+
+    /// <summary>
+    /// Updates an existing parking record in the JSON file.
+    /// Reads the JSON file, finds and updates the record, and persists the changes.
+    /// </summary>
+    /// <param name="parking">The parking entity with updated values.</param>
+    /// <returns>A task representing the asynchronous operation. Returns true if update was successful.</returns>
+    Task<bool> UpdateInJsonAsync(Parking parking);
+
+    /// <summary>
+    /// Deletes a parking record from the JSON file.
+    /// Reads the JSON file, removes the record, and persists the changes.
+    /// </summary>
+    /// <param name="id">The ID of the parking lot to delete from JSON.</param>
+    /// <returns>A task representing the asynchronous operation. Returns true if deletion was successful.</returns>
+    Task<bool> DeleteFromJsonAsync(long id);
 }

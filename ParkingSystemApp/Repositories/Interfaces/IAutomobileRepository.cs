@@ -66,4 +66,32 @@ public interface IAutomobileRepository
     /// </summary>
     /// <returns>The full path to the PRQ_Automobiles.json file.</returns>
     string GetJsonFilePath();
+
+    // ========================================
+    // JSON-based CRUD Operations
+    // ========================================
+
+    /// <summary>
+    /// Inserts a new automobile record into the JSON file.
+    /// Reads the current JSON file, adds the new record, and persists the changes.
+    /// </summary>
+    /// <param name="automobile">The automobile entity to insert into JSON.</param>
+    /// <returns>A task representing the asynchronous operation. Returns the ID of the inserted record.</returns>
+    Task<long> InsertToJsonAsync(Automobile automobile);
+
+    /// <summary>
+    /// Updates an existing automobile record in the JSON file.
+    /// Reads the JSON file, finds and updates the record, and persists the changes.
+    /// </summary>
+    /// <param name="automobile">The automobile entity with updated values.</param>
+    /// <returns>A task representing the asynchronous operation. Returns true if update was successful.</returns>
+    Task<bool> UpdateInJsonAsync(Automobile automobile);
+
+    /// <summary>
+    /// Deletes an automobile record from the JSON file.
+    /// Reads the JSON file, removes the record, and persists the changes.
+    /// </summary>
+    /// <param name="id">The ID of the automobile to delete from JSON.</param>
+    /// <returns>A task representing the asynchronous operation. Returns true if deletion was successful.</returns>
+    Task<bool> DeleteFromJsonAsync(long id);
 }

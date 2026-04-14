@@ -217,6 +217,176 @@ public class AutomobileRepository : IAutomobileRepository
         }
     }
 
+    // ========================================
+    // JSON-based CRUD Operations
+    // ========================================
+
+    /// <summary>
+    /// Inserts a new automobile record into the JSON file.
+    /// Reads the current JSON file, adds the new record, and persists the changes.
+    /// </summary>
+    public async Task<long> InsertToJsonAsync(Automobile automobile)
+    {
+        if (automobile == null)
+        {
+            throw new ArgumentNullException(nameof(automobile));
+        }
+
+        try
+        {
+            string filePath = GetJsonFilePath();
+
+            // Read existing automobiles from JSON
+            var automobiles = new List<Automobile>();
+            if (File.Exists(filePath))
+            {
+                string jsonContent = await File.ReadAllTextAsync(filePath);
+                automobiles = JsonSerializer.Deserialize<List<Automobile>>(jsonContent, 
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<Automobile>();
+            }
+
+            // Set timestamps
+            automobile.CreatedAt = DateTime.UtcNow;
+            automobile.UpdatedAt = DateTime.UtcNow;
+
+            // Generate new ID (max existing ID + 1)
+            automobile.Id = automobiles.Count > 0 ? automobiles.Max(a => a.Id) + 1 : 1;
+
+            // Add to list
+            automobiles.Add(automobile);
+
+            // Write back to JSON file
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string updatedJson = JsonSerializer.Serialize(automobiles, options);
+            await File.WriteAllTextAsync(filePath, updatedJson);
+
+            _logger.LogInformation($"Automobile inserted into JSON file with ID: {automobile.Id}");
+            return automobile.Id;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError($"Error serializing to JSON: {ex.Message}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error inserting automobile to JSON: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Updates an existing automobile record in the JSON file.
+    /// Reads the JSON file, finds and updates the record, and persists the changes.
+    /// </summary>
+    public async Task<bool> UpdateInJsonAsync(Automobile automobile)
+    {
+        if (automobile == null)
+        {
+            throw new ArgumentNullException(nameof(automobile));
+        }
+
+        try
+        {
+            string filePath = GetJsonFilePath();
+
+            if (!File.Exists(filePath))
+            {
+                _logger.LogWarning($"JSON file not found at {filePath}");
+                return false;
+            }
+
+            // Read existing automobiles from JSON
+            string jsonContent = await File.ReadAllTextAsync(filePath);
+            var automobiles = JsonSerializer.Deserialize<List<Automobile>>(jsonContent, 
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<Automobile>();
+
+            // Find and update the automobile
+            var existingAutomobile = automobiles.FirstOrDefault(a => a.Id == automobile.Id);
+            if (existingAutomobile == null)
+            {
+                _logger.LogWarning($"Automobile with ID {automobile.Id} not found in JSON file");
+                return false;
+            }
+
+            // Update properties
+            existingAutomobile.Color = automobile.Color;
+            existingAutomobile.Year = automobile.Year;
+            existingAutomobile.Manufacturer = automobile.Manufacturer;
+            existingAutomobile.Type = automobile.Type;
+            existingAutomobile.UpdatedAt = DateTime.UtcNow;
+
+            // Write back to JSON file
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string updatedJson = JsonSerializer.Serialize(automobiles, options);
+            await File.WriteAllTextAsync(filePath, updatedJson);
+
+            _logger.LogInformation($"Automobile with ID {automobile.Id} updated in JSON file");
+            return true;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError($"Error deserializing from JSON: {ex.Message}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error updating automobile in JSON: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Deletes an automobile record from the JSON file.
+    /// Reads the JSON file, removes the record, and persists the changes.
+    /// </summary>
+    public async Task<bool> DeleteFromJsonAsync(long id)
+    {
+        try
+        {
+            string filePath = GetJsonFilePath();
+
+            if (!File.Exists(filePath))
+            {
+                _logger.LogWarning($"JSON file not found at {filePath}");
+                return false;
+            }
+
+            // Read existing automobiles from JSON
+            string jsonContent = await File.ReadAllTextAsync(filePath);
+            var automobiles = JsonSerializer.Deserialize<List<Automobile>>(jsonContent, 
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<Automobile>();
+
+            // Find and remove the automobile
+            var automobileToDelete = automobiles.FirstOrDefault(a => a.Id == id);
+            if (automobileToDelete == null)
+            {
+                _logger.LogWarning($"Automobile with ID {id} not found in JSON file");
+                return false;
+            }
+
+            automobiles.Remove(automobileToDelete);
+
+            // Write back to JSON file
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string updatedJson = JsonSerializer.Serialize(automobiles, options);
+            await File.WriteAllTextAsync(filePath, updatedJson);
+
+            _logger.LogInformation($"Automobile with ID {id} deleted from JSON file");
+            return true;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError($"Error deserializing from JSON: {ex.Message}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error deleting automobile from JSON: {ex.Message}");
+            throw;
+        }
+    }
+
     /// <summary>
     /// Gets the path to the Automobiles JSON file.
     /// </summary>
