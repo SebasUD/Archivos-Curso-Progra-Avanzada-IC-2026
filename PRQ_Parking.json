@@ -1,0 +1,36 @@
+{
+  "description": "PRQ_Parking - Sample parking lot data for car parking system",
+  "total_records": 4,
+  "created_date": "2026-04-13",
+  "currency": "USD",
+  "parking_lots": [
+    {
+      "id": 1,
+      "province_name": "San José",
+      "parking_name": "Parking Central Downtown",
+      "price_per_hour": 2.50,
+      "created_at": "2026-04-13T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "province_name": "Alajuela",
+      "parking_name": "Alajuela Mall Parking",
+      "price_per_hour": 2.00,
+      "created_at": "2026-04-13T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "province_name": "Cartago",
+      "parking_name": "Cartago Industrial Park",
+      "price_per_hour": 1.75,
+      "created_at": "2026-04-13T00:00:00Z"
+    },
+    {
+      "id": 4,
+      "province_name": "Heredia",
+      "parking_name": "Heredia Medical Center",
+      "price_per_hour": 3.00,
+      "created_at": "2026-04-13T00:00:00Z"
+    }
+  ]
+}

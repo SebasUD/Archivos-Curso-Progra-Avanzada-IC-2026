@@ -1,0 +1,71 @@
+{
+  "description": "PRQ_Automobiles - Sample automobile data for car parking system",
+  "total_records": 8,
+  "created_date": "2026-04-13",
+  "automobiles": [
+    {
+      "id": 1,
+      "color": "Red",
+      "year": 2020,
+      "manufacturer": "Toyota",
+      "type": "sedan",
+      "created_at": "2026-04-13T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "color": "Black",
+      "year": 2019,
+      "manufacturer": "Honda",
+      "type": "sedan",
+      "created_at": "2026-04-13T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "color": "Silver",
+      "year": 2021,
+      "manufacturer": "Ford",
+      "type": "4x4",
+      "created_at": "2026-04-13T00:00:00Z"
+    },
+    {
+      "id": 4,
+      "color": "Blue",
+      "year": 2018,
+      "manufacturer": "BMW",
+      "type": "sedan",
+      "created_at": "2026-04-13T00:00:00Z"
+    },
+    {
+      "id": 5,
+      "color": "White",
+      "year": 2022,
+      "manufacturer": "Yamaha",
+      "type": "motorcycle",
+      "created_at": "2026-04-13T00:00:00Z"
+    },
+    {
+      "id": 6,
+      "color": "Gray",
+      "year": 2020,
+      "manufacturer": "Jeep",
+      "type": "4x4",
+      "created_at": "2026-04-13T00:00:00Z"
+    },
+    {
+      "id": 7,
+      "color": "Green",
+      "year": 2021,
+      "manufacturer": "Harley-Davidson",
+      "type": "motorcycle",
+      "created_at": "2026-04-13T00:00:00Z"
+    },
+    {
+      "id": 8,
+      "color": "Orange",
+      "year": 2019,
+      "manufacturer": "Nissan",
+      "type": "sedan",
+      "created_at": "2026-04-13T00:00:00Z"
+    }
+  ]
+}
