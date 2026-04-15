@@ -279,6 +279,86 @@ public class CarEntryRepository : ICarEntryRepository
         }
     }
 
+    /// <summary>
+    /// Retrieves car entries filtered by vehicle type and date range.
+    /// </summary>
+    public async Task<IEnumerable<CarEntry>> GetByVehicleTypeAndDateRangeAsync(string? vehicleType = null, DateTime? dateStart = null, DateTime? dateEnd = null)
+    {
+        try
+        {
+            var query = _context.CarEntries
+                .Include(c => c.Automobile)
+                .Include(c => c.Parking)
+                .AsQueryable();
+
+            // Filter by vehicle type (case-insensitive)
+            if (!string.IsNullOrWhiteSpace(vehicleType))
+            {
+                query = query.Where(c => c.Automobile.Type.ToLower() == vehicleType.ToLower());
+            }
+
+            // Filter by date range (EntryDateTime)
+            if (dateStart.HasValue)
+            {
+                query = query.Where(c => c.EntryDateTime >= dateStart.Value);
+            }
+
+            if (dateEnd.HasValue)
+            {
+                query = query.Where(c => c.EntryDateTime <= dateEnd.Value);
+            }
+
+            var carEntries = await query.ToListAsync();
+            _logger.LogInformation($"Retrieved {carEntries.Count} car entries filtered by type={vehicleType}, dateStart={dateStart}, dateEnd={dateEnd}");
+            return carEntries;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error retrieving car entries by vehicle type and date range: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Retrieves car entries filtered by province and date range.
+    /// </summary>
+    public async Task<IEnumerable<CarEntry>> GetByProvinceAndDateRangeAsync(string? province = null, DateTime? dateStart = null, DateTime? dateEnd = null)
+    {
+        try
+        {
+            var query = _context.CarEntries
+                .Include(c => c.Automobile)
+                .Include(c => c.Parking)
+                .AsQueryable();
+
+            // Filter by province (case-insensitive partial match)
+            if (!string.IsNullOrWhiteSpace(province))
+            {
+                query = query.Where(c => c.Parking.ProvinceName.ToLower().Contains(province.ToLower()));
+            }
+
+            // Filter by date range (EntryDateTime)
+            if (dateStart.HasValue)
+            {
+                query = query.Where(c => c.EntryDateTime >= dateStart.Value);
+            }
+
+            if (dateEnd.HasValue)
+            {
+                query = query.Where(c => c.EntryDateTime <= dateEnd.Value);
+            }
+
+            var carEntries = await query.ToListAsync();
+            _logger.LogInformation($"Retrieved {carEntries.Count} car entries filtered by province={province}, dateStart={dateStart}, dateEnd={dateEnd}");
+            return carEntries;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error retrieving car entries by province and date range: {ex.Message}");
+            throw;
+        }
+    }
+
     // ========================================
     // Data Retrieval from JSON
     // ========================================

@@ -42,6 +42,7 @@ builder.Services.AddDbContext<ParkingSystemDbContext>(options =>
 
 builder.Services.AddScoped<IAutomobileRepository, AutomobileRepository>();
 builder.Services.AddScoped<IParkingRepository, ParkingRepository>();
+builder.Services.AddScoped<ICarEntryRepository, CarEntryRepository>();
 
 builder.Services.AddCors(options =>
 {

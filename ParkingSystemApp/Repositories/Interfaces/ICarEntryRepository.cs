@@ -78,6 +78,24 @@ public interface ICarEntryRepository
     /// <returns>A task representing the asynchronous operation. Returns a collection of car entries for the specified parking lot.</returns>
     Task<IEnumerable<CarEntry>> GetByParkingAsync(long parkingId);
 
+    /// <summary>
+    /// Retrieves car entries filtered by vehicle type and date range.
+    /// </summary>
+    /// <param name="vehicleType">The vehicle type to filter by (e.g., sedan, 4x4, motorcycle).</param>
+    /// <param name="dateStart">The start date for the filter (inclusive).</param>
+    /// <param name="dateEnd">The end date for the filter (inclusive).</param>
+    /// <returns>A task representing the asynchronous operation. Returns filtered car entries.</returns>
+    Task<IEnumerable<CarEntry>> GetByVehicleTypeAndDateRangeAsync(string? vehicleType = null, DateTime? dateStart = null, DateTime? dateEnd = null);
+
+    /// <summary>
+    /// Retrieves car entries filtered by province and date range.
+    /// </summary>
+    /// <param name="province">The province name to filter by (case-insensitive).</param>
+    /// <param name="dateStart">The start date for the filter (inclusive).</param>
+    /// <param name="dateEnd">The end date for the filter (inclusive).</param>
+    /// <returns>A task representing the asynchronous operation. Returns filtered car entries.</returns>
+    Task<IEnumerable<CarEntry>> GetByProvinceAndDateRangeAsync(string? province = null, DateTime? dateStart = null, DateTime? dateEnd = null);
+
     // ========================================
     // Data Retrieval from JSON
     // ========================================
