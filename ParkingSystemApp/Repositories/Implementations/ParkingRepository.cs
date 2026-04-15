@@ -212,6 +212,66 @@ public class ParkingRepository : IParkingRepository
         }
     }
 
+    /// <summary>
+    /// Retrieves parking records with advanced filtering.
+    /// Supports filtering by province, parking name, and price range.
+    /// </summary>
+    public async Task<IEnumerable<Parking>> GetFilteredAsync(string? province = null, string? name = null, decimal? priceMin = null, decimal? priceMax = null)
+    {
+        try
+        {
+            // Validate price range
+            if ((priceMin.HasValue && priceMin < 0) || (priceMax.HasValue && priceMax < 0))
+            {
+                _logger.LogWarning("Price values cannot be negative");
+                return new List<Parking>();
+            }
+
+            if (priceMin.HasValue && priceMax.HasValue && priceMin > priceMax)
+            {
+                _logger.LogWarning("priceMin cannot be greater than priceMax");
+                return new List<Parking>();
+            }
+
+            // Build the query with optional filters
+            var query = _context.ParkingLots.AsQueryable();
+
+            // Filter by province (case-insensitive partial match)
+            if (!string.IsNullOrWhiteSpace(province))
+            {
+                query = query.Where(p => p.ProvinceName.ToLower().Contains(province.ToLower()));
+            }
+
+            // Filter by parking name (case-insensitive partial match)
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                query = query.Where(p => p.ParkingName.ToLower().Contains(name.ToLower()));
+            }
+
+            // Filter by price range
+            if (priceMin.HasValue)
+            {
+                query = query.Where(p => p.PricePerHour >= priceMin.Value);
+            }
+
+            if (priceMax.HasValue)
+            {
+                query = query.Where(p => p.PricePerHour <= priceMax.Value);
+            }
+
+            // Execute the query
+            var parkings = await query.ToListAsync();
+            
+            _logger.LogInformation($"Retrieved {parkings.Count} parking lots matching filter criteria: province={province}, name={name}, priceMin={priceMin}, priceMax={priceMax}");
+            return parkings;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error filtering parking lots: {ex.Message}");
+            throw;
+        }
+    }
+
     // ========================================
     // Data Retrieval from JSON
     // ========================================

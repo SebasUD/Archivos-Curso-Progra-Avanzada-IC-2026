@@ -387,6 +387,61 @@ public class AutomobileRepository : IAutomobileRepository
         }
     }
 
+    // ========================================
+    // Filtering Operations
+    // ========================================
+
+    /// <summary>
+    /// Retrieves automobiles from the database filtered by multiple criteria.
+    /// </summary>
+    public async Task<IEnumerable<Automobile>> GetFilteredAsync(
+        string? color = null,
+        int? yearStart = null,
+        int? yearEnd = null,
+        string? manufacturer = null,
+        string? type = null)
+    {
+        try
+        {
+            var query = _context.Automobiles.AsQueryable();
+
+            // Apply filters
+            if (!string.IsNullOrWhiteSpace(color))
+            {
+                query = query.Where(a => a.Color.Contains(color));
+            }
+
+            if (yearStart.HasValue)
+            {
+                query = query.Where(a => a.Year >= yearStart.Value);
+            }
+
+            if (yearEnd.HasValue)
+            {
+                query = query.Where(a => a.Year <= yearEnd.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(manufacturer))
+            {
+                query = query.Where(a => a.Manufacturer.Contains(manufacturer));
+            }
+
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                query = query.Where(a => a.Type.Contains(type));
+            }
+
+            var automobiles = await query.ToListAsync();
+            _logger.LogInformation($"Retrieved {automobiles.Count} automobiles with applied filters");
+            return automobiles;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error retrieving filtered automobiles: {ex.Message}");
+            throw;
+        }
+    }
+
     /// <summary>
     /// Gets the path to the Automobiles JSON file.
     /// </summary>

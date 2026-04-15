@@ -1,152 +1,71 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using ParkingSystemApp.Configuration;
 using ParkingSystemApp.Data;
+using ParkingSystemApp.Repositories.Implementations;
+using ParkingSystemApp.Repositories.Interfaces;
 
-// ========================================
-// Parking System Application
-// MySQL 8.0 Cloud Connection Setup
-// ========================================
+var builder = WebApplication.CreateBuilder(args);
 
-// Build configuration
-var configuration = new ConfigurationBuilder()
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddUserSecrets<Program>(optional: true) // Load User Secrets if available
-    .Build();
+builder.Services.AddControllers();
 
-// Setup dependency injection
-var services = new ServiceCollection();
-
-// Add logging
-services.AddLogging(builder =>
+builder.Services.AddLogging(logging =>
 {
-    builder.AddConsole();
-    builder.AddConfiguration(configuration.GetSection("Logging"));
+    logging.AddConsole();
+    logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 });
 
-// Add DbContext with MySQL connection
-var connectionStringHelper = new ConnectionStringHelper(configuration);
-var connectionString = connectionStringHelper.GetMySqlConnectionString();
-
-Console.WriteLine("========================================");
-Console.WriteLine("Parking System - Database Connection Test");
-Console.WriteLine("========================================\n");
-
-services.AddDbContext<ParkingSystemDbContext>(options =>
-{
-    options.UseMySql(
-        connectionString,
-        ServerVersion.AutoDetect(connectionString));
-});
-
-// Add configuration and helpers to DI container
-services.AddSingleton(configuration);
-services.AddSingleton<ConnectionStringHelper>();
-
-// Build service provider
-var serviceProvider = services.BuildServiceProvider();
+var connectionStringHelper = new ConnectionStringHelper(builder.Configuration);
+string connectionString;
 
 try
 {
-    // Get DbContext and test connection
-    using (var context = serviceProvider.GetRequiredService<ParkingSystemDbContext>())
-    {
-        Console.WriteLine("Testing database connection...\n");
-        
-        // Test connection by checking if database is accessible
-        bool canConnect = await context.Database.CanConnectAsync();
-        
-        if (canConnect)
+    connectionString = connectionStringHelper.GetMySqlConnectionString();
+    Console.WriteLine("MySQL connection string loaded successfully.");
+}
+catch (InvalidOperationException ex)
+{
+    Console.WriteLine("\n⚠️ WARNING: MySQL Connection String Not Configured!");
+    Console.WriteLine(ex.Message);
+    throw;
+}
+
+builder.Services.AddDbContext<ParkingSystemDbContext>(options =>
+{
+    options.UseMySql(
+        connectionString,
+        new MySqlServerVersion(new Version(8, 0, 0)),
+        mysqlOptions =>
         {
-            Console.WriteLine("✓ Database connection successful!\n");
+            mysqlOptions.EnableRetryOnFailure();
+        });
+});
 
-            // Display database tables
-            Console.WriteLine("Tables in the database:");
-            Console.WriteLine("- PRQ_Automobiles");
-            Console.WriteLine("- PRQ_Parking");
-            Console.WriteLine("- PRQ_CarEntry\n");
+builder.Services.AddScoped<IAutomobileRepository, AutomobileRepository>();
+builder.Services.AddScoped<IParkingRepository, ParkingRepository>();
 
-            // Query sample data
-            await QuerySampleData(context);
-        }
-        else
-        {
-            Console.WriteLine("✗ Failed to connect to database.\n");
-            Console.WriteLine("Please verify:");
-            Console.WriteLine("1. Your cloud MySQL instance is running");
-            Console.WriteLine("2. Connection credentials are correct");
-            Console.WriteLine("3. Network allows connection to your cloud host");
-        }
-    }
-}
-catch (Exception ex)
+builder.Services.AddCors(options =>
 {
-    Console.WriteLine($"✗ Error: {ex.Message}\n");
-    Console.WriteLine("Troubleshooting steps:");
-    Console.WriteLine("1. Check your User Secrets configuration: dotnet user-secrets list");
-    Console.WriteLine("2. Verify appsettings.json has valid connection values");
-    Console.WriteLine("3. Ensure database tables exist (run design-bd.sql first)");
-    Console.WriteLine($"\nDetails: {ex}\n");
-}
-finally
-{
-    Console.WriteLine("========================================");
-    Console.WriteLine("Connection test completed.");
-    Console.WriteLine("========================================");
-}
-
-// ========================================
-// Helper method for querying sample data
-// ========================================
-async Task QuerySampleData(ParkingSystemDbContext context)
-{
-    Console.WriteLine("Sample Data Query Results:\n");
-
-    // Query automobiles
-    var automobiles = await context.Automobiles.ToListAsync();
-    Console.WriteLine($"Total Automobiles: {automobiles.Count}");
-    foreach (var auto in automobiles.Take(3))
+    options.AddPolicy("AllowAll", policy =>
     {
-        Console.WriteLine($"  - {auto.Manufacturer} {auto.Color} ({auto.Type}) - Year {auto.Year}");
-    }
-    if (automobiles.Count > 3)
-        Console.WriteLine($"  ... and {automobiles.Count - 3} more\n");
-    else
-        Console.WriteLine();
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
-    // Query parking lots
-    var parkings = await context.ParkingLots.ToListAsync();
-    Console.WriteLine($"Total Parking Lots: {parkings.Count}");
-    foreach (var parking in parkings.Take(3))
-    {
-        Console.WriteLine($"  - {parking.ParkingName} ({parking.ProvinceName}) - ${parking.PricePerHour}/hour");
-    }
-    if (parkings.Count > 3)
-        Console.WriteLine($"  ... and {parkings.Count - 3} more\n");
-    else
-        Console.WriteLine();
+var app = builder.Build();
 
-    // Query car entries
-    var entries = await context.CarEntries.Include(e => e.Automobile).Include(e => e.Parking).ToListAsync();
-    Console.WriteLine($"Total Parking Sessions: {entries.Count}");
-    
-    var currentlyParked = entries.Where(e => e.IsCurrentlyParked).ToList();
-    var completed = entries.Where(e => e.IsSessionCompleted).ToList();
-    
-    Console.WriteLine($"  - Currently Parked: {currentlyParked.Count}");
-    Console.WriteLine($"  - Completed Sessions: {completed.Count}\n");
+app.UseHttpsRedirection();
+app.UseCors("AllowAll");
+app.UseAuthorization();
+app.MapControllers();
 
-    // Show some completed session details with computed properties
-    Console.WriteLine("Sample Completed Sessions with Calculations:");
-    foreach (var entry in completed.Take(3))
-    {
-        Console.WriteLine($"  Vehicle: {entry.Automobile.Manufacturer} {entry.Automobile.Color}");
-        Console.WriteLine($"  Parking: {entry.Parking.ParkingName}");
-        Console.WriteLine($"  Stay: {entry.StayDurationMinutes} minutes ({entry.StayDurationHours:F2} hours)");
-        Console.WriteLine($"  Amount to Pay: ${entry.TotalAmountToPay:F2}\n");
-    }
-}
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation("========================================");
+logger.LogInformation("Parking System API - Starting Application");
+logger.LogInformation("========================================");
+logger.LogInformation($"Environment: {app.Environment.EnvironmentName}");
+logger.LogInformation($"Database: {connectionStringHelper.GetDatabaseName()}");
+logger.LogInformation("========================================");
+
+app.Run("http://localhost:5000");

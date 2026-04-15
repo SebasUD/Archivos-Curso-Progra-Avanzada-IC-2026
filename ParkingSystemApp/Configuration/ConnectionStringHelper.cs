@@ -97,4 +97,29 @@ public class ConnectionStringHelper
         var requiredParts = new[] { "Server=", "Database=", "Uid=", "Pwd=" };
         return requiredParts.All(part => connectionString.Contains(part, StringComparison.OrdinalIgnoreCase));
     }
+
+    /// <summary>
+    /// Gets the database name from the current MySQL connection string.
+    /// </summary>
+    /// <returns>The database name, or "Unknown" if not found.</returns>
+    public string GetDatabaseName()
+    {
+        try
+        {
+            var connectionString = GetMySqlConnectionString();
+            var parts = connectionString.Split(';');
+            var databasePart = parts.FirstOrDefault(p => p.StartsWith("Database=", StringComparison.OrdinalIgnoreCase));
+            
+            if (databasePart != null)
+            {
+                return databasePart.Substring("Database=".Length);
+            }
+
+            return "Unknown";
+        }
+        catch
+        {
+            return "Unknown";
+        }
+    }
 }

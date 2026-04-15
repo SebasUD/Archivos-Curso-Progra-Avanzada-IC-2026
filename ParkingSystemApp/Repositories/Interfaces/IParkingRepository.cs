@@ -58,6 +58,17 @@ public interface IParkingRepository
     /// <returns>A task representing the asynchronous operation. Returns the parking if found; otherwise null.</returns>
     Task<Parking?> GetByLocationAsync(string provinceName, string parkingName);
 
+    /// <summary>
+    /// Retrieves parking records with advanced filtering.
+    /// Supports filtering by province, parking name, and price range.
+    /// </summary>
+    /// <param name="province">Filter by province name (case-insensitive partial match).</param>
+    /// <param name="name">Filter by parking name (case-insensitive partial match).</param>
+    /// <param name="priceMin">Filter by minimum price per hour.</param>
+    /// <param name="priceMax">Filter by maximum price per hour.</param>
+    /// <returns>A task representing the asynchronous operation. Returns filtered parking lots.</returns>
+    Task<IEnumerable<Parking>> GetFilteredAsync(string? province = null, string? name = null, decimal? priceMin = null, decimal? priceMax = null);
+
     // ========================================
     // Data Retrieval from JSON
     // ========================================

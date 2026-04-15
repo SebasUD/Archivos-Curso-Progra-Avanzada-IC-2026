@@ -94,4 +94,24 @@ public interface IAutomobileRepository
     /// <param name="id">The ID of the automobile to delete from JSON.</param>
     /// <returns>A task representing the asynchronous operation. Returns true if deletion was successful.</returns>
     Task<bool> DeleteFromJsonAsync(long id);
+
+    // ========================================
+    // Filtering Operations
+    // ========================================
+
+    /// <summary>
+    /// Retrieves automobiles from the database filtered by multiple criteria.
+    /// </summary>
+    /// <param name="color">Filter by vehicle color (optional).</param>
+    /// <param name="yearStart">Filter by minimum year (optional).</param>
+    /// <param name="yearEnd">Filter by maximum year (optional).</param>
+    /// <param name="manufacturer">Filter by manufacturer name (optional).</param>
+    /// <param name="type">Filter by vehicle type (optional).</param>
+    /// <returns>A task representing the asynchronous operation. Returns filtered automobiles.</returns>
+    Task<IEnumerable<Automobile>> GetFilteredAsync(
+        string? color = null,
+        int? yearStart = null,
+        int? yearEnd = null,
+        string? manufacturer = null,
+        string? type = null);
 }
