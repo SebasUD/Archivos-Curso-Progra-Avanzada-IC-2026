@@ -6,7 +6,9 @@ using ParkingSystemApp.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Configuration.AddUserSecrets<Program>(optional: true);
+
+builder.Services.AddControllersWithViews();
 
 builder.Services.AddLogging(logging =>
 {
@@ -61,6 +63,10 @@ var logger = app.Services.GetRequiredService<ILogger<Program>>();
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=AutomobilesMvc}/{action=Index}/{id?}");
 app.MapControllers();
 
 logger.LogInformation("========================================");

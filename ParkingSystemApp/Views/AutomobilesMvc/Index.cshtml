@@ -1,0 +1,304 @@
+@{
+    Layout = null;
+    ViewData["Title"] = "Automobiles Search";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Automobiles Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: end;
+            margin-bottom: 1rem;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            min-width: 180px;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 10px 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .primary { background: #2563eb; color: white; }
+        .details { background: #0ea5e9; color: white; }
+        .edit { background: #f59e0b; color: white; }
+        .delete { background: #dc2626; color: white; }
+
+        .status {
+            margin: 12px 0;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .status.show { display: block; }
+        .status.info { background: #dbeafe; color: #1d4ed8; }
+        .status.error { background: #fee2e2; color: #b91c1c; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafc;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .empty {
+            text-align: center;
+            color: #6b7280;
+            padding: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Automobiles</h1>
+        <p>Search automobiles by year range using the API.</p>
+
+        <div class="search-bar">
+            <div class="field">
+                <label for="yearStart">Lower year</label>
+                <input type="number" id="yearStart" min="1900" max="2100" placeholder="e.g. 2018" />
+            </div>
+
+            <div class="field">
+                <label for="yearEnd">Upper year</label>
+                <input type="number" id="yearEnd" min="1900" max="2100" placeholder="e.g. 2024" />
+            </div>
+
+            <button id="searchButton" class="primary">Search</button>
+        </div>
+
+        <div id="statusMessage" class="status"></div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Color</th>
+                    <th>Year</th>
+                    <th>Manufacturer</th>
+                    <th>Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="resultsBody">
+                <tr>
+                    <td colspan="6" class="empty">Enter a year range and click Search.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const apiBase = '/api/automobiles';
+        const yearStartInput = document.getElementById('yearStart');
+        const yearEndInput = document.getElementById('yearEnd');
+        const searchButton = document.getElementById('searchButton');
+        const resultsBody = document.getElementById('resultsBody');
+        const statusMessage = document.getElementById('statusMessage');
+
+        function showStatus(message, type = 'info') {
+            statusMessage.textContent = message;
+            statusMessage.className = `status show ${type}`;
+        }
+
+        function clearStatus() {
+            statusMessage.textContent = '';
+            statusMessage.className = 'status';
+        }
+
+        function renderRows(automobiles) {
+            if (!automobiles || automobiles.length === 0) {
+                resultsBody.innerHTML = '<tr><td colspan="6" class="empty">No automobiles found in that range.</td></tr>';
+                return;
+            }
+
+            resultsBody.innerHTML = automobiles.map(car => {
+                const id = car.id ?? car.Id;
+                const color = car.color ?? car.Color;
+                const year = car.year ?? car.Year;
+                const manufacturer = car.manufacturer ?? car.Manufacturer;
+                const type = car.type ?? car.Type;
+
+                return `
+                    <tr>
+                        <td>${id}</td>
+                        <td>${color}</td>
+                        <td>${year}</td>
+                        <td>${manufacturer}</td>
+                        <td>${type}</td>
+                        <td>
+                            <div class="actions">
+                                <button class="details" onclick="viewDetails(${id})">Details</button>
+                                <button class="edit" onclick="editAutomobile(${id})">Edit</button>
+                                <button class="delete" onclick="deleteAutomobile(${id})">Delete</button>
+                            </div>
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+
+        async function searchAutomobiles() {
+            clearStatus();
+
+            const yearStart = yearStartInput.value.trim();
+            const yearEnd = yearEndInput.value.trim();
+
+            if (!yearStart || !yearEnd) {
+                showStatus('Please enter both lower and upper year values.', 'error');
+                return;
+            }
+
+            if (Number(yearStart) > Number(yearEnd)) {
+                showStatus('Lower year cannot be greater than upper year.', 'error');
+                return;
+            }
+
+            showStatus('Searching automobiles...');
+
+            try {
+                const query = new URLSearchParams({ yearStart, yearEnd });
+                const response = await fetch(`${apiBase}/filter?${query.toString()}`);
+                const payload = await response.json();
+
+                if (!response.ok || payload.success === false) {
+                    throw new Error(payload.message || 'Search failed.');
+                }
+
+                renderRows(payload.data || []);
+                showStatus(payload.message || 'Search completed successfully.');
+            } catch (error) {
+                resultsBody.innerHTML = '<tr><td colspan="6" class="empty">Unable to load automobiles.</td></tr>';
+                showStatus(error.message, 'error');
+            }
+        }
+
+        function viewDetails(id) {
+            window.location.href = `${apiBase}/${id}`;
+        }
+
+        async function editAutomobile(id) {
+            try {
+                const response = await fetch(`${apiBase}/${id}`);
+                const payload = await response.json();
+
+                if (!response.ok || payload.success === false) {
+                    throw new Error(payload.message || 'Unable to fetch automobile details.');
+                }
+
+                const car = payload.data;
+                const manufacturer = prompt('Manufacturer:', car.manufacturer ?? car.Manufacturer);
+                if (manufacturer === null) return;
+
+                const color = prompt('Color:', car.color ?? car.Color);
+                if (color === null) return;
+
+                const year = prompt('Year:', car.year ?? car.Year);
+                if (year === null) return;
+
+                const type = prompt('Type (sedan, 4x4, motorcycle):', car.type ?? car.Type);
+                if (type === null) return;
+
+                const updateResponse = await fetch(`${apiBase}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ manufacturer, color, year: Number(year), type })
+                });
+
+                const updatePayload = await updateResponse.json();
+
+                if (!updateResponse.ok || updatePayload.success === false) {
+                    throw new Error(updatePayload.message || 'Update failed.');
+                }
+
+                showStatus(updatePayload.message || 'Automobile updated successfully.');
+                searchAutomobiles();
+            } catch (error) {
+                showStatus(error.message, 'error');
+            }
+        }
+
+        async function deleteAutomobile(id) {
+            if (!confirm(`Delete automobile ${id}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${apiBase}/${id}`, { method: 'DELETE' });
+                const payload = await response.json();
+
+                if (!response.ok || payload.success === false) {
+                    throw new Error(payload.message || 'Delete failed.');
+                }
+
+                showStatus(payload.message || 'Automobile deleted successfully.');
+                searchAutomobiles();
+            } catch (error) {
+                showStatus(error.message, 'error');
+            }
+        }
+
+        searchButton.addEventListener('click', searchAutomobiles);
+        yearStartInput.addEventListener('keydown', event => { if (event.key === 'Enter') searchAutomobiles(); });
+        yearEndInput.addEventListener('keydown', event => { if (event.key === 'Enter') searchAutomobiles(); });
+    </script>
+</body>
+</html>
