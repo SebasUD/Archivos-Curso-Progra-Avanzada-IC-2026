@@ -56,12 +56,13 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
 
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("========================================");
 logger.LogInformation("Parking System API - Starting Application");
 logger.LogInformation("========================================");
