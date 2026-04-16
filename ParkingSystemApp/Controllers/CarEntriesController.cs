@@ -153,6 +153,58 @@ public class CarEntriesController : ControllerBase
     }
 
     /// <summary>
+    /// Get all car entries for a specific automobile with computed fields.
+    /// </summary>
+    /// <param name="automobileId">The automobile ID</param>
+    /// <returns>List of parking entries for the specified automobile</returns>
+    /// <response code="200">Returns the list of car entries</response>
+    /// <response code="400">Invalid automobile ID</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("byAutomobile/{automobileId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponse<IEnumerable<CarEntryResponseDto>>>> GetByAutomobile(long automobileId)
+    {
+        try
+        {
+            if (automobileId <= 0)
+            {
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "automobileId must be greater than 0",
+                    Data = null,
+                    Timestamp = DateTime.UtcNow
+                });
+            }
+
+            _logger.LogInformation($"GET /api/carEntries/byAutomobile/{automobileId} - Fetching entries for automobile");
+            var carEntries = await _repository.GetByAutomobileAsync(automobileId);
+            var responseDtos = carEntries.Select(MapToResponseDto).ToList();
+
+            return Ok(new ApiResponse<IEnumerable<CarEntryResponseDto>>
+            {
+                Success = true,
+                Message = $"Retrieved {responseDtos.Count} parking entries for automobile {automobileId}",
+                Data = responseDtos,
+                Timestamp = DateTime.UtcNow
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error fetching car entries for automobile {automobileId}: {ex.Message}");
+            return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<object>
+            {
+                Success = false,
+                Message = $"Error: {ex.Message}",
+                Data = null,
+                Timestamp = DateTime.UtcNow
+            });
+        }
+    }
+
+    /// <summary>
     /// Get car entries with advanced filtering by vehicle type and date range,
     /// or by province and date range
     /// </summary>

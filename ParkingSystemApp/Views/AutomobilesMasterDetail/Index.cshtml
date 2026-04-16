@@ -1,0 +1,345 @@
+@{
+    Layout = null;
+    ViewData["Title"] = "Automobiles Master Detail";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Automobiles Master Detail</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            align-items: end;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            min-width: 220px;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        select, button {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-size: 14px;
+        }
+
+        button {
+            border: none;
+            background: #2563eb;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 18px;
+        }
+
+        .panel {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 1rem;
+            background: #fafcff;
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            font-size: 1.1rem;
+        }
+
+        .status {
+            margin: 10px 0 16px;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .status.show { display: block; }
+        .status.info { background: #dbeafe; color: #1d4ed8; }
+        .status.error { background: #fee2e2; color: #b91c1c; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        th {
+            background: #eff6ff;
+        }
+
+        .clickable-row {
+            cursor: pointer;
+        }
+
+        .clickable-row:hover {
+            background: #eff6ff;
+        }
+
+        .clickable-row.selected {
+            background: #dbeafe;
+        }
+
+        .empty {
+            text-align: center;
+            color: #6b7280;
+            padding: 16px;
+        }
+
+        .selected-title {
+            margin: 0 0 10px;
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Automobiles Master/Detail</h1>
+        <p>Choose an automobile type, load the master list, and click one automobile to see its parking entries below.</p>
+
+        <div class="toolbar">
+            <div class="field">
+                <label for="typeSelect">Automobile type</label>
+                <select id="typeSelect">
+                    <option value="">Select a type</option>
+                    <option value="sedan">Sedan</option>
+                    <option value="4x4">4x4</option>
+                    <option value="motorcycle">Motorcycle</option>
+                </select>
+            </div>
+
+            <button id="searchButton">Search</button>
+        </div>
+
+        <div id="statusMessage" class="status"></div>
+
+        <div class="grid">
+            <section class="panel">
+                <h2>Master Section: Automobiles</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Manufacturer</th>
+                            <th>Color</th>
+                            <th>Year</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+                    <tbody id="masterBody">
+                        <tr><td colspan="5" class="empty">Select a type and click Search.</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="panel">
+                <h2>Detail Section: Parking Entries</h2>
+                <p id="selectedAutomobileTitle" class="selected-title">No automobile selected.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Parking ID</th>
+                            <th>Entry Datetime</th>
+                            <th>Exit Datetime</th>
+                            <th>Duration in Minutes</th>
+                            <th>Duration in Hours</th>
+                            <th>Amount to Pay</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailBody">
+                        <tr><td colspan="6" class="empty">Choose an automobile from the master section.</td></tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        const automobilesApi = '/api/automobiles';
+        const carEntriesApi = '/api/carEntries';
+
+        const typeSelect = document.getElementById('typeSelect');
+        const searchButton = document.getElementById('searchButton');
+        const masterBody = document.getElementById('masterBody');
+        const detailBody = document.getElementById('detailBody');
+        const statusMessage = document.getElementById('statusMessage');
+        const selectedAutomobileTitle = document.getElementById('selectedAutomobileTitle');
+
+        function showStatus(message, type = 'info') {
+            statusMessage.textContent = message;
+            statusMessage.className = `status show ${type}`;
+        }
+
+        function clearStatus() {
+            statusMessage.textContent = '';
+            statusMessage.className = 'status';
+        }
+
+        function formatDateTime(value) {
+            if (!value) return 'Still parked';
+            const date = new Date(value);
+            return isNaN(date.getTime()) ? value : date.toLocaleString();
+        }
+
+        function formatNumber(value, decimals = 2) {
+            if (value === null || value === undefined) return 'N/A';
+            return Number(value).toFixed(decimals);
+        }
+
+        function renderAutomobiles(automobiles) {
+            if (!automobiles || automobiles.length === 0) {
+                masterBody.innerHTML = '<tr><td colspan="5" class="empty">No automobiles found for the selected type.</td></tr>';
+                detailBody.innerHTML = '<tr><td colspan="6" class="empty">No automobile selected.</td></tr>';
+                selectedAutomobileTitle.textContent = 'No automobile selected.';
+                return;
+            }
+
+            masterBody.innerHTML = automobiles.map(car => {
+                const id = car.id ?? car.Id;
+                const manufacturer = car.manufacturer ?? car.Manufacturer;
+                const color = car.color ?? car.Color;
+                const year = car.year ?? car.Year;
+                const type = car.type ?? car.Type;
+
+                return `
+                    <tr class="clickable-row" data-id="${id}" data-label="${manufacturer} ${color} (${year})">
+                        <td>${id}</td>
+                        <td>${manufacturer}</td>
+                        <td>${color}</td>
+                        <td>${year}</td>
+                        <td>${type}</td>
+                    </tr>`;
+            }).join('');
+
+            document.querySelectorAll('.clickable-row').forEach(row => {
+                row.addEventListener('click', async () => {
+                    document.querySelectorAll('.clickable-row').forEach(r => r.classList.remove('selected'));
+                    row.classList.add('selected');
+
+                    const automobileId = row.dataset.id;
+                    const label = row.dataset.label;
+                    selectedAutomobileTitle.textContent = `Selected automobile: ${label}`;
+                    await loadCarEntries(automobileId);
+                });
+            });
+        }
+
+        function renderCarEntries(entries) {
+            if (!entries || entries.length === 0) {
+                detailBody.innerHTML = '<tr><td colspan="6" class="empty">No parking entries found for this automobile.</td></tr>';
+                return;
+            }
+
+            detailBody.innerHTML = entries.map(entry => {
+                const parkingId = entry.parkingId ?? entry.ParkingId;
+                const entryDateTime = entry.entryDateTime ?? entry.EntryDateTime;
+                const exitDateTime = entry.exitDateTime ?? entry.ExitDateTime;
+                const stayMinutes = entry.stayMinutes ?? entry.StayMinutes;
+                const stayHours = entry.stayHours ?? entry.StayHours;
+                const totalAmount = entry.totalAmount ?? entry.TotalAmount;
+
+                return `
+                    <tr>
+                        <td>${parkingId}</td>
+                        <td>${formatDateTime(entryDateTime)}</td>
+                        <td>${formatDateTime(exitDateTime)}</td>
+                        <td>${stayMinutes ?? 'N/A'}</td>
+                        <td>${formatNumber(stayHours)}</td>
+                        <td>${totalAmount === null || totalAmount === undefined ? 'N/A' : '$' + formatNumber(totalAmount)}</td>
+                    </tr>`;
+            }).join('');
+        }
+
+        async function loadAutomobiles() {
+            clearStatus();
+            const type = typeSelect.value;
+
+            if (!type) {
+                showStatus('Please select an automobile type.', 'error');
+                return;
+            }
+
+            masterBody.innerHTML = '<tr><td colspan="5" class="empty">Loading automobiles...</td></tr>';
+            detailBody.innerHTML = '<tr><td colspan="6" class="empty">Choose an automobile from the master section.</td></tr>';
+            selectedAutomobileTitle.textContent = 'No automobile selected.';
+
+            try {
+                const response = await fetch(`${automobilesApi}/filter?type=${encodeURIComponent(type)}`);
+                const payload = await response.json();
+
+                if (!response.ok || payload.success === false) {
+                    throw new Error(payload.message || 'Unable to load automobiles.');
+                }
+
+                renderAutomobiles(payload.data || []);
+                showStatus(payload.message || 'Automobiles loaded successfully.');
+            } catch (error) {
+                masterBody.innerHTML = '<tr><td colspan="5" class="empty">Unable to load automobiles.</td></tr>';
+                showStatus(error.message, 'error');
+            }
+        }
+
+        async function loadCarEntries(automobileId) {
+            detailBody.innerHTML = '<tr><td colspan="6" class="empty">Loading parking entries...</td></tr>';
+
+            try {
+                const response = await fetch(`${carEntriesApi}/byAutomobile/${automobileId}`);
+                const payload = await response.json();
+
+                if (!response.ok || payload.success === false) {
+                    throw new Error(payload.message || 'Unable to load parking entries.');
+                }
+
+                renderCarEntries(payload.data || []);
+                showStatus(payload.message || 'Parking entries loaded successfully.');
+            } catch (error) {
+                detailBody.innerHTML = '<tr><td colspan="6" class="empty">Unable to load parking entries.</td></tr>';
+                showStatus(error.message, 'error');
+            }
+        }
+
+        searchButton.addEventListener('click', loadAutomobiles);
+        typeSelect.addEventListener('keydown', event => {
+            if (event.key === 'Enter') {
+                loadAutomobiles();
+            }
+        });
+    </script>
+</body>
+</html>

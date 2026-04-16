@@ -66,7 +66,7 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=AutomobilesMvc}/{action=Index}/{id?}");
+    pattern: "{controller=AutomobilesMasterDetail}/{action=Index}/{id?}");
 app.MapControllers();
 
 logger.LogInformation("========================================");
